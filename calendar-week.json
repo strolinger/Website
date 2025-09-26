@@ -1,0 +1,442 @@
+[
+  {
+    "row": [
+      "Time (ET)",
+      "Report",
+      "Period",
+      "Actual",
+      "Median Forecast",
+      "Previous"
+    ]
+  },
+  {
+    "row": [
+      "MONDAY, SEPT. 22",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "10:00 am",
+      "St. Louis Fed President Alberto Musalem speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "12:00 pm",
+      "Fed governor Stephen Miran speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "12:00 pm",
+      "Cleveland Fed President Beth Hammack speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "12:00 pm",
+      "Richmond Fed President Tom Barkin speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "TUESDAY, SEPT. 23",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "9:00 am",
+      "Fed Vice Chair for Supervision Michelle Bowman speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "9:45 am",
+      "S&P flash U.S. services PMI",
+      "Sept.",
+      "53.9",
+      "54.0",
+      "54.5"
+    ]
+  },
+  {
+    "row": [
+      "9:45 am",
+      "S&P flash U.S. manufacturing PMI",
+      "Sept.",
+      "52.7",
+      "51.5",
+      "53.0"
+    ]
+  },
+  {
+    "row": [
+      "10:00 am",
+      "Atlanta Fed President Raphael Bostic speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "12:35 pm",
+      "Fed Chair Jerome Powell speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "WEDNESDAY, SEPT. 24",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "10:00 am",
+      "New home sales",
+      "Aug.",
+      "800,000",
+      "649,000",
+      "664,000"
+    ]
+  },
+  {
+    "row": [
+      "4:10 pm",
+      "San Francisco Fed President Mary Daly speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "THURSDAY, SEPT. 25",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "7:30 am",
+      "Fed Governor Stephen Miran TV appearance",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "8:15 am",
+      "Fed Governor Stephen Miran TV appearance",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "8:20 am",
+      "Chicago Fed President Austan Goolsbee speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "Initial jobless claims",
+      "Sept. 20",
+      "218,000",
+      "235,000",
+      "232,000"
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "GDP (third estimate)",
+      "Q2",
+      "3.8%",
+      "3.3%",
+      "3.3%"
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "Advanced U.S. trade balance in goods",
+      "Aug.",
+      "- $85.5B",
+      "--",
+      "-$102.8B"
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "Advanced retail inventories",
+      "Aug.",
+      "0.0",
+      "--",
+      "0.1%"
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "Advanced wholesale inventories",
+      "Aug.",
+      "-0.2%",
+      "--",
+      "0.0%"
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "Durable-goods orders",
+      "Aug.",
+      "2.9%",
+      "-0.4%",
+      "-2.7%"
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "Durable-goods minus transportation",
+      "Aug.",
+      "0.4%",
+      "--",
+      "1.0%"
+    ]
+  },
+  {
+    "row": [
+      "9:00 am",
+      "New York Fed President John Williams opening remarks",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "9:00 am",
+      "Kansas City Fed President Jeff Schmid speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "10:00 am",
+      "Fed Vice Chair for Supervision Michelle Bowman speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "10:00 am",
+      "Existing home sales",
+      "Aug.",
+      "4.0 million",
+      "3.96 million",
+      "4.01 million"
+    ]
+  },
+  {
+    "row": [
+      "1:00 pm",
+      "Fed gov. Michael Barr speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "1:40 pm",
+      "Dallas Fed President Lorie Logan speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "3:30 pm",
+      "San Francisco Fed President Mary Daly speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "FRIDAY, SEPT. 26",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "7:30 am",
+      "Richmond Fed President Tom Barkin TV appearance",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "Personal income",
+      "Aug.",
+      "",
+      "0.3%",
+      "0.4%"
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "Personal spending",
+      "Aug.",
+      "",
+      "0.5%",
+      "0.5%"
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "PCE index",
+      "Aug.",
+      "",
+      "0.3%",
+      "0.2%"
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "PCE (year-over-year)",
+      "",
+      "",
+      "2.7%",
+      "2.6%"
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "Core PCE index",
+      "Aug.",
+      "",
+      "0.2%",
+      "0.3%"
+    ]
+  },
+  {
+    "row": [
+      "8:30 am",
+      "Core PCE (year-over-year)",
+      "",
+      "",
+      "2.9%",
+      "2.9%"
+    ]
+  },
+  {
+    "row": [
+      "9:00 am",
+      "Richmond Fed President Tom Barkin speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "row": [
+      "10:00 am",
+      "Consumer sentiment (final)",
+      "Sept.",
+      "",
+      "55.4",
+      "55.4"
+    ]
+  },
+  {
+    "row": [
+      "1:00 pm",
+      "Fed Vice Chair for Supervision Michelle Bowman speech",
+      "",
+      "",
+      "",
+      ""
+    ]
+  }
+]

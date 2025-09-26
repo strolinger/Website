@@ -1,0 +1,62 @@
+[
+  {
+    "symbol": "TSLA",
+    "name": "Tesla, Inc.",
+    "price": "423.39",
+    "changePct": "-4.38%"
+  },
+  {
+    "symbol": "MU",
+    "name": "Micron Technology, Inc.",
+    "price": "156.83",
+    "changePct": "-3.02%"
+  },
+  {
+    "symbol": "META",
+    "name": "Meta Platforms, Inc.",
+    "price": "748.91",
+    "changePct": "-1.54%"
+  },
+  {
+    "symbol": "TXN",
+    "name": "Texas Instruments Incorporated",
+    "price": "182.04",
+    "changePct": "-1.30%"
+  },
+  {
+    "symbol": "IWM",
+    "name": "iShares Russell 2000 ETF",
+    "price": "239.29",
+    "changePct": "-0.96%"
+  },
+  {
+    "symbol": "AMZN",
+    "name": "Amazon.com, Inc.",
+    "price": "218.15",
+    "changePct": "-0.94%"
+  },
+  {
+    "symbol": "BA",
+    "name": "Boeing Company (The)",
+    "price": "213.53",
+    "changePct": "-0.73%"
+  },
+  {
+    "symbol": "MSFT",
+    "name": "Microsoft Corporation",
+    "price": "507.03",
+    "changePct": "-0.61%"
+  },
+  {
+    "symbol": "BABA",
+    "name": "Alibaba Group Holding Limited",
+    "price": "175.47",
+    "changePct": "-0.55%"
+  },
+  {
+    "symbol": "GOOGL",
+    "name": "Alphabet Inc.",
+    "price": "245.79",
+    "changePct": "-0.55%"
+  }
+]

@@ -1,0 +1,1 @@
+-NoProfile -ExecutionPolicy Bypass -Command "& 'C:\Users\strol\AppData\Local\Programs\Python\Python313\python.exe' 'C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website\update_quotes.py'"

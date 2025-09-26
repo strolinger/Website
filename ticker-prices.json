@@ -1,0 +1,110 @@
+[
+  {
+    "symbol": "AAPL",
+    "name": "Apple Inc.",
+    "price": "256.87",
+    "changePct": "+1.81%"
+  },
+  {
+    "symbol": "AMD",
+    "name": "Advanced Micro Devices, Inc.",
+    "price": "161.27",
+    "changePct": "+0.24%"
+  },
+  {
+    "symbol": "AMZN",
+    "name": "Amazon.com, Inc.",
+    "price": "218.15",
+    "changePct": "-0.94%"
+  },
+  {
+    "symbol": "MSFT",
+    "name": "Microsoft Corporation",
+    "price": "507.03",
+    "changePct": "-0.61%"
+  },
+  {
+    "symbol": "META",
+    "name": "Meta Platforms, Inc.",
+    "price": "748.91",
+    "changePct": "-1.54%"
+  },
+  {
+    "symbol": "BA",
+    "name": "Boeing Company (The)",
+    "price": "213.53",
+    "changePct": "-0.73%"
+  },
+  {
+    "symbol": "GOOGL",
+    "name": "Alphabet Inc.",
+    "price": "245.79",
+    "changePct": "-0.55%"
+  },
+  {
+    "symbol": "TSLA",
+    "name": "Tesla, Inc.",
+    "price": "423.39",
+    "changePct": "-4.38%"
+  },
+  {
+    "symbol": "COST",
+    "name": "Costco Wholesale Corporation",
+    "price": "943.31",
+    "changePct": "-0.21%"
+  },
+  {
+    "symbol": "TXN",
+    "name": "Texas Instruments Incorporated",
+    "price": "182.04",
+    "changePct": "-1.30%"
+  },
+  {
+    "symbol": "WDAY",
+    "name": "Workday, Inc.",
+    "price": "242.75",
+    "changePct": "+0.51%"
+  },
+  {
+    "symbol": "NFLX",
+    "name": "Netflix, Inc.",
+    "price": "1208.24",
+    "changePct": "+0.36%"
+  },
+  {
+    "symbol": "NVDA",
+    "name": "NVIDIA Corporation",
+    "price": "177.69",
+    "changePct": "+0.41%"
+  },
+  {
+    "symbol": "MU",
+    "name": "Micron Technology, Inc.",
+    "price": "156.83",
+    "changePct": "-3.02%"
+  },
+  {
+    "symbol": "INTC",
+    "name": "Intel Corporation",
+    "price": "33.99",
+    "changePct": "+8.87%"
+  },
+  {
+    "symbol": "DIS",
+    "name": "Walt Disney Company (The)",
+    "price": "112.99",
+    "changePct": "-0.39%"
+  },
+  {
+    "symbol": "BABA",
+    "name": "Alibaba Group Holding Limited",
+    "price": "175.47",
+    "changePct": "-0.55%"
+  },
+  {
+    "symbol": "IWM",
+    "name": "iShares Russell 2000 ETF",
+    "price": "239.29",
+    "changePct": "-0.96%"
+  }
+]

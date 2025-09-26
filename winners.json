@@ -1,0 +1,62 @@
+[
+  {
+    "symbol": "INTC",
+    "name": "Intel Corporation",
+    "price": "33.99",
+    "changePct": "+8.87%"
+  },
+  {
+    "symbol": "AAPL",
+    "name": "Apple Inc.",
+    "price": "256.87",
+    "changePct": "+1.81%"
+  },
+  {
+    "symbol": "WDAY",
+    "name": "Workday, Inc.",
+    "price": "242.75",
+    "changePct": "+0.51%"
+  },
+  {
+    "symbol": "NVDA",
+    "name": "NVIDIA Corporation",
+    "price": "177.69",
+    "changePct": "+0.41%"
+  },
+  {
+    "symbol": "NFLX",
+    "name": "Netflix, Inc.",
+    "price": "1208.24",
+    "changePct": "+0.36%"
+  },
+  {
+    "symbol": "AMD",
+    "name": "Advanced Micro Devices, Inc.",
+    "price": "161.27",
+    "changePct": "+0.24%"
+  },
+  {
+    "symbol": "COST",
+    "name": "Costco Wholesale Corporation",
+    "price": "943.31",
+    "changePct": "-0.21%"
+  },
+  {
+    "symbol": "DIS",
+    "name": "Walt Disney Company (The)",
+    "price": "112.99",
+    "changePct": "-0.39%"
+  },
+  {
+    "symbol": "GOOGL",
+    "name": "Alphabet Inc.",
+    "price": "245.79",
+    "changePct": "-0.55%"
+  },
+  {
+    "symbol": "BABA",
+    "name": "Alibaba Group Holding Limited",
+    "price": "175.47",
+    "changePct": "-0.55%"
+  }
+]

@@ -1,0 +1,585 @@
+'===================================== POWERSHELL ==============================================
+
+& "C:\Users\strol\AppData\Local\Programs\Python\Python313\python.exe" `
+  "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website\update_dashboard.py" `
+  "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website"
+
+
+Get-Content "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website\update_dashboard.log" -Tail 120
+
+'===============================================================================================
+
+
+'====================================== COMMANDS ===============================================
+
+'--- open the right folder ---
+cd "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website"
+
+'--- run quick listing ---
+dir index.html, update_dashboard.py, today.json, winners.json, losers.json, ticker-prices.json, fear-greed-snapshot.png, heatmap-snapshot.png | select Name,Length,LastWriteTime
+
+'--- Re-generate all data & snapshots (one command) ---
+& "C:\Users\strol\AppData\Local\Programs\Python\Python313\python.exe" "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website\update_dashboard.py" "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website"
+
+'--- Start the local server and view it ---
+& "C:\Users\strol\AppData\Local\Programs\Python\Python313\python.exe" -m http.server 8000
+
+'--- Make today/winners/losers automatically (and news) ---
+& "C:\Users\strol\AppData\Local\Programs\Python\Python313\python.exe" `
+  "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website\update_dashboard.py" `
+  "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website"
+
+'===============================================================================================
+
+
+'===================================== index.html ==============================================
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Trolinger & Associates — Market Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --bg:#0b0c10; --card:#14161a; --muted:#9aa4ad; --text:#e8eef2;
+    --accent:#2dd4bf; --red:#ef4444; --green:#10b981; --border:#20242b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Segoe UI,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  a{color:#8dd3ff;text-decoration:none} a:hover{text-decoration:underline}
+
+  header{position:sticky;top:0;z-index:50;background:rgba(11,12,16,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+  .nav{max-width:1200px;margin:0 auto;display:flex;gap:16px;align-items:center;padding:10px 16px}
+  .nav .brand{font-weight:700;letter-spacing:.3px}
+  .nav a.tab{padding:6px 10px;border-radius:8px;border:1px solid transparent}
+  .nav a.tab:hover{border-color:var(--border);background:#101216}
+  #lastUpdated{color:var(--muted);margin-left:auto;font-size:.92rem}
+
+  main{max-width:1200px;margin:18px auto;padding:0 16px}
+  section[id]{scroll-margin-top:78px;} /* <— fixes misaligned anchor jumps under sticky header */
+
+  /* Ticker */
+  .ticker-wrap{overflow:hidden;white-space:nowrap;border:1px solid var(--border);background:#0f1116;border-radius:10px}
+  .ticker{display:inline-block;padding:8px 0;animation:scroll 40s linear infinite}
+  .chip{display:inline-flex;gap:6px;align-items:center;padding:4px 10px;margin:0 8px;border-radius:999px;background:#0c0e13;border:1px solid #1a2030}
+  .chip .pct.up{color:var(--green)} .chip .pct.down{color:var(--red)}
+  @keyframes scroll{from{transform:translateX(0)} to{transform:translateX(-50%)}}
+
+  /* Cards / grids */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+  h2{margin:.2rem 0 .6rem;font-size:1.15rem}
+  .muted{color:var(--muted);font-size:.92rem}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media (max-width:980px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse}
+  th,td{border-bottom:1px solid var(--border);padding:8px 6px;text-align:left}
+  th{color:#b8c4cc;font-weight:600}
+
+  /* Snapshots */
+  .snapshot{width:100%;max-height:780px;object-fit:contain;background:#0e1015;border:1px solid var(--border);border-radius:10px}
+
+  /* Winners/Losers colors */
+  .ok{color:var(--green)} .bad{color:var(--red)}
+
+  /* News bullets + collapsible detail */
+  .news-bullets ul{margin:.3rem 0 0 1.1rem;padding:0}
+  .news-bullets li{margin:.32rem 0; list-style: disc;}
+  .news-item{cursor:pointer}
+  .news-item .meta{color:var(--muted); font-size:.85rem; margin-left:.4rem}
+  .collapse{max-height:0; overflow:hidden; transition:max-height .22s ease}
+  .collapse.open{max-height:220px}
+  .news-detail{border-left:2px solid var(--border); margin:.25rem 0 .5rem 1rem; padding:.45rem .6rem; background:#10141b;border-radius:8px}
+</style>
+</head>
+<body>
+<header>
+  <nav class="nav">
+    <div class="brand">Trolinger &amp; Associates</div>
+    <a class="tab" href="#calendar-today">Economic Calendar</a>
+    <a class="tab" href="#winners-losers">Winners &amp; Losers</a>
+    <a class="tab" href="#heatmap">Heat Map</a>
+    <a class="tab" href="#news">Big Cap News</a>
+    <div id="lastUpdated"></div>
+  </nav>
+</header>
+
+<main>
+  <!-- Big Cap Ticker -->
+  <section aria-label="Big Cap Ticker" style="margin:8px 0 18px">
+    <div class="ticker-wrap">
+      <div id="ticker1" class="ticker"></div>
+      <div id="ticker2" class="ticker" aria-hidden="true"></div>
+    </div>
+    <div class="muted" style="margin-top:6px">
+      Reads <code>ticker-prices.json</code> if present. Otherwise shows placeholders.
+    </div>
+  </section>
+
+  <!-- ECONOMIC CALENDAR (TODAY) — now at the top -->
+  <section id="calendar-today" class="card" style="margin-top:12px">
+    <h2>Economic Calendar — Today</h2>
+    <div id="calendarToday"></div>
+    <div class="muted" style="margin-top:8px">
+      <a target="_blank" href="https://www.marketwatch.com/economy-politics/calendar">Open full MarketWatch calendar →</a>
+    </div>
+  </section>
+
+  <!-- Winners / Losers -->
+  <section id="winners-losers" class="grid2" style="margin-top:16px">
+    <div class="card">
+      <h2>Top Winners</h2>
+      <table id="tbl-winners"><thead><tr><th>Symbol</th><th>Name</th><th>Price</th><th>%</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="card">
+      <h2>Top Losers</h2>
+      <table id="tbl-losers"><thead><tr><th>Symbol</th><th>Name</th><th>Price</th><th>%</th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+
+  <!-- HEAT MAP — full width with links below -->
+  <section id="heatmap" class="card" style="margin-top:16px">
+    <h2>Market Heat Map</h2>
+    <img class="snapshot" src="heatmap-snapshot.png" alt="Finviz Heatmap snapshot" />
+    <div class="muted" style="margin-top:8px;display:flex;gap:18px;flex-wrap:wrap">
+      <a target="_blank" href="https://finviz.com/map.ashx">Open Heat Map Index →</a>
+      <a target="_blank" href="https://money.cnn.com/data/fear-and-greed/">Open Fear &amp; Greed Index →</a>
+    </div>
+  </section>
+
+  <!-- Big Cap News — 3 columns, alphabetized tickers -->
+  <section id="news" class="card" style="margin-top:16px">
+    <h2>Big Cap News</h2>
+    <div id="news-grid" class="grid3"></div>
+    <div class="muted" style="margin-top:6px">Bullet headlines; click to expand details. Reads local <code>news-*.json</code>.</div>
+  </section>
+
+  <footer class="muted" style="margin:24px 0 10px">Snapshots &amp; data are generated around 6:00am by local scripts.</footer>
+</main>
+
+<script>
+const BIG_CAPS = ["AAPL","AMD","AMZN","BA","BABA","COST","DIS","GOOGL","INTC","IWM","META","MSFT","MU","NFLX","NVDA","TSLA","TXN","WDAY"];
+const SORTED = [...BIG_CAPS].sort();
+document.getElementById('lastUpdated').textContent = 'Last updated ' + new Date().toLocaleString();
+
+/* Smooth scroll (still useful, but CSS scroll-margin-top handles the stop position) */
+document.querySelectorAll('a.tab').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    const el = document.querySelector(a.getAttribute('href'));
+    el && el.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
+
+async function loadJSON(path){
+  try{ const r=await fetch(path,{cache:'no-cache'}); if(!r.ok) throw 0; return await r.json(); }
+  catch{ return null; }
+}
+
+/* ---------- Ticker ---------- */
+async function renderTicker(){
+  let data = await loadJSON('ticker-prices.json');
+  if(!Array.isArray(data) || !data.length){
+    data = SORTED.map(s=>({symbol:s,price:'',changePct:''}));
+  }
+  const line = data.map(x=>{
+    const pct = (x.changePct ?? '').toString();
+    const cls = pct.startsWith('+') ? 'pct up' : (pct.startsWith('-') ? 'pct down' : 'pct');
+    return `<span class="chip"><span>${x.symbol}</span><span>${x.price??''}</span><span class="${cls}">${pct}</span></span>`;
+  }).join(' ') + ' ';
+  document.getElementById('ticker1').innerHTML = line + line;
+  document.getElementById('ticker2').innerHTML = line + line;
+}
+
+/* ---------- Winners / Losers ---------- */
+function rowsFrom(arr,neg=false){
+  if(!Array.isArray(arr) || !arr.length) return '<tr><td colspan="4" class="muted">No data</td></tr>';
+  return arr.map(o=>{
+    const pct = o.changePct ?? '';
+    const cls = String(pct).startsWith('-') || neg ? 'bad' : 'ok';
+    return `<tr><td>${o.symbol||''}</td><td>${o.name||''}</td><td>${o.price||''}</td><td class="${cls}">${pct}</td></tr>`;
+  }).join('');
+}
+async function renderWinnersLosers(){
+  const w = await loadJSON('winners.json');
+  const l = await loadJSON('losers.json');
+  document.querySelector('#tbl-winners tbody').innerHTML = rowsFrom(w||[]);
+  document.querySelector('#tbl-losers tbody').innerHTML = rowsFrom(l||[], true);
+}
+
+/* ---------- Economic Calendar (TODAY) ---------- */
+async function renderCalendarToday(){
+  const el = document.getElementById('calendarToday');
+  const data = await loadJSON('calendar-today.json');  // new file written by the updater
+  if(!Array.isArray(data) || !data.length){ el.innerHTML='<div class="muted">No entries for today.</div>'; return; }
+  const rows = data.map(it=>`
+    <tr>
+      <td>${it.time||''}</td>
+      <td>${it.release||it.event||''}</td>
+      <td>${it.period||''}</td>
+      <td>${it.actual||''}</td>
+      <td>${it.median||it.forecast||''}</td>
+      <td>${it.previous||''}</td>
+    </tr>`).join('');
+  el.innerHTML = `<table>
+    <thead><tr><th>Time</th><th>Release</th><th>Period</th><th>Actual</th><th>Forecast / Median</th><th>Previous</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+}
+
+/* ---------- Big Cap News (3 columns, alphabetized) ---------- */
+function buildTickerNews(ticker, articles){
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `<h3 style="margin:.1rem 0 .4rem">${ticker}</h3>
+                    <div class="news-bullets" id="nb-${ticker}"></div>`;
+  const host = card.querySelector('.news-bullets');
+
+  if(!articles || !articles.length){ host.innerHTML = `<p class="muted">No recent articles.</p>`; return card; }
+
+  const ul = document.createElement('ul'); host.appendChild(ul);
+  articles.slice(0,3).forEach((it, idx)=>{
+    const li = document.createElement('li'); li.className='news-item';
+    const title = (it.title || 'Untitled').trim();
+    const link = it.link || '#';
+    const when = (it.published || '').replace(' +0000','');
+    let hostName=''; try{ hostName = new URL(link).hostname; }catch{}
+    li.innerHTML = `
+      <span class="headline">${title}</span>
+      ${when ? `<span class="meta">· ${when}</span>`:''}
+      <div class="collapse" id="nd-${ticker}-${idx}">
+        <div class="news-detail">
+          <div style="margin-bottom:.35rem"><a href="${link}" target="_blank" rel="noopener">Open article →</a></div>
+          <div class="muted">Source: <span>${hostName || 'link'}</span></div>
+        </div>
+      </div>`;
+    li.addEventListener('click', e=>{
+      if(e.target.tagName.toLowerCase()==='a') return;
+      li.querySelector('.collapse').classList.toggle('open');
+    });
+    ul.appendChild(li);
+  });
+  return card;
+}
+async function renderNews(){
+  const grid = document.getElementById('news-grid');
+  grid.innerHTML = '';
+  for(const t of SORTED){
+    const data = await loadJSON(`news-${t.toLowerCase()}.json`) || [];
+    grid.appendChild(buildTickerNews(t, data));
+  }
+}
+
+/* ---------- Init ---------- */
+renderTicker();
+renderWinnersLosers();
+renderCalendarToday();
+renderNews();
+</script>
+</body>
+</html>
+
+
+'===============================================================================================
+
+
+'================================= update_dashboard.py =========================================
+
+#!/usr/bin/env python3
+"""
+update_dashboard.py — generates dashboard data & snapshots
+(Updated: writes calendar-today.json with Time/Release/Period/Actual/Forecast(Median)/Previous)
+
+Usage:
+  python update_dashboard.py "C:\\Users\\strol\\OneDrive\\Desktop\\Trading - Desktop\\00_Scripts\\Website"
+"""
+
+import os, sys, json, time, math, re, datetime
+from pathlib import Path
+
+import requests
+import feedparser
+from bs4 import BeautifulSoup
+import yfinance as yf
+from playwright.sync_api import sync_playwright
+
+# ---------------- CONFIG ----------------
+DEFAULT_WEBROOT = os.getcwd()
+TICKERS = [
+    "AAPL","AMD","AMZN","MSFT","META","BA","GOOGL","TSLA",
+    "COST","TXN","WDAY","NFLX","NVDA","MU","INTC","DIS","BABA","IWM"
+]
+YAHOO_RSS_TEMPLATE = "https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}&region=US&lang=en-US"
+MARKETWATCH_CAL_URL = "https://www.marketwatch.com/economy-politics/calendar"
+FEAR_GREED_URL = "https://money.cnn.com/data/fear-and-greed/"
+HEATMAP_URL    = "https://finviz.com/map.ashx"
+UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
+# ---------------------------------------
+
+def ensure_dir(p): Path(p).mkdir(parents=True, exist_ok=True)
+def save_json(obj, path): Path(path).write_text(json.dumps(obj, indent=2), encoding="utf-8")
+
+# ---------- NEWS ----------
+def fetch_rss_top3(session, ticker):
+    url = YAHOO_RSS_TEMPLATE.format(ticker=ticker)
+    r = session.get(url, timeout=20, headers={"User-Agent":"market-dashboard/1.0"})
+    r.raise_for_status()
+    parsed = feedparser.parse(r.content)
+    items = []
+    for e in parsed.get("entries", [])[:3]:
+        items.append({
+            "title": (e.get("title") or "").strip(),
+            "link": e.get("link") or e.get("id") or "",
+            "published": e.get("published","") or e.get("updated","")
+        })
+    return items
+
+def write_all_news(webroot, tickers):
+    s = requests.Session()
+    for t in tickers:
+        try:
+            items = fetch_rss_top3(s, t)
+            save_json(items, Path(webroot)/f"news-{t.lower()}.json")
+            time.sleep(0.2)
+        except Exception as e:
+            print("NEWS fail", t, e)
+
+# ---------- QUOTES ----------
+def write_quotes_and_movers(webroot, tickers):
+    data = []
+    bundle = yf.Tickers(" ".join(tickers))
+    for sym in tickers:
+        try:
+            t = bundle.tickers[sym]
+            price = None
+            try:
+                price = float(getattr(t, "fast_info", {}).get("last_price"))
+            except Exception:
+                pass
+            if price is None:
+                price = float(t.info.get("regularMarketPrice"))
+            pct = t.info.get("regularMarketChangePercent")
+            if pct is None:
+                prev = t.info.get("previousClose")
+                pct = ((price - prev)/prev*100.0) if prev else 0.0
+            name = t.info.get("shortName") or t.info.get("longName") or sym
+            data.append({"symbol":sym,"name":name,"price":f"{price:.2f}","changePct":f"{pct:+.2f}%"})
+        except Exception as e:
+            print("Quote fail", sym, e)
+    if data:
+        save_json(data, Path(webroot)/"ticker-prices.json")
+        data2 = sorted(data, key=lambda x: float(str(x["changePct"]).replace("%","")), reverse=True)
+        save_json(data2[:10], Path(webroot)/"winners.json")
+        save_json(list(reversed(data2))[:10], Path(webroot)/"losers.json")
+        print("Wrote prices + winners/losers")
+
+# ---------- MARKETWATCH (weekly + today structured) ----------
+def fetch_marketwatch_html_requests():
+    import requests
+    s = requests.Session()
+    r = s.get(MARKETWATCH_CAL_URL, timeout=30, headers={
+        "User-Agent": UA,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Cache-Control": "no-cache", "Pragma": "no-cache",
+        "Referer": "https://www.marketwatch.com/",
+    })
+    r.raise_for_status()
+    return r.text
+
+def fetch_marketwatch_html_playwright():
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
+        ctx = browser.new_context(viewport={"width":1400,"height":1000}, user_agent=UA)
+        page = ctx.new_page()
+        page.goto(MARKETWATCH_CAL_URL, wait_until="domcontentloaded", timeout=60000)
+        for sel in ["button:has-text('Accept')","button:has-text('I Accept')",
+                    "text=/^Agree$/i","text=/Accept All/i","[aria-label*='accept']"]:
+            try:
+                if page.locator(sel).count(): page.locator(sel).first.click(timeout=1500); break
+            except: pass
+        try: page.wait_for_selector("table", timeout=15000)
+        except: pass
+        page.wait_for_timeout(1200)
+        html = page.content()
+        ctx.close(); browser.close()
+        return html
+
+def fetch_marketwatch_html():
+    try:
+        return fetch_marketwatch_html_requests()
+    except Exception as e:
+        print("MarketWatch requests() failed — falling back to Playwright:", e)
+        return fetch_marketwatch_html_playwright()
+
+def parse_weekly_table(html):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(html, "html.parser")
+    events = []
+    table = soup.find("table")
+    if not table: return events
+    for tr in table.find_all("tr"):
+        cols = [td.get_text(strip=True) for td in tr.find_all(["td","th"])]
+        if cols: events.append(cols)
+    return events
+
+def extract_today_rows(html):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(html, "html.parser")
+    import re, datetime
+    now = datetime.datetime.now()
+    dow = now.strftime("%A").upper()
+    mon = now.strftime("%b").upper().rstrip('.')
+    day = str(int(now.strftime("%d")))
+    header_re = re.compile(rf"{dow}.*{mon}.*{day}\b")
+
+    header = None
+    for t in soup.find_all(string=header_re):
+        header = t.parent; break
+
+    def is_day_header(el):
+        txt = el.get_text(" ", strip=True).upper()
+        return bool(re.search(r"(MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|SATURDAY|SUNDAY)", txt))
+
+    rows = []
+    if header:
+        ptr = header
+        while ptr:
+            ptr = ptr.find_next(["tr","h2","h3","div"])
+            if not ptr: break
+            if is_day_header(ptr) and ptr is not header: break
+            if ptr.name == "tr":
+                tds = [td.get_text(" ", strip=True) for td in ptr.find_all("td")]
+                if len(tds) >= 2: rows.append(tds)
+
+    if not rows:  # fallback: scan first table, keep time-looking rows
+        for cols in parse_weekly_table(html):
+            if cols and re.search(r"\b(am|pm)\b", cols[0], re.I):
+                rows.append(cols)
+
+    out = []
+    for cols in rows:
+        c = cols + [""] * (6 - len(cols))
+        rec = {"time":c[0], "release":c[1], "period":c[2], "actual":c[3], "median":c[4], "previous":c[5]}
+        if len(cols)==4 and rec["actual"] and not rec["median"] and not rec["previous"]:
+            rec["previous"]=c[3]; rec["actual"]=c[2]; rec["period"]=""; rec["median"]=""
+        out.append(rec)
+    return out
+
+def write_calendar_files(webroot):
+    html = fetch_marketwatch_html()   # <-- this exact function name
+    weekly_rows = parse_weekly_table(html)
+    if weekly_rows:
+        save_json([{"row": r} for r in weekly_rows[:400]], Path(webroot)/"calendar-week.json")
+        print("Saved calendar-week.json (raw rows)")
+    today_rows = extract_today_rows(html)
+    save_json(today_rows, Path(webroot)/"calendar-today.json")
+    print(f"Saved calendar-today.json ({len(today_rows)} rows)")
+
+
+# ---------- SCREENSHOTS ----------
+def capture_screenshots(webroot, headless=True):
+    fg_path = Path(webroot) / "fear-greed-snapshot.png"
+    hm_path = Path(webroot) / "heatmap-snapshot.png"
+
+    def click_if_exists(page, locator, timeout=3000):
+        try:
+            el = page.locator(locator)
+            if el.count() and el.first.is_visible():
+                el.first.click(timeout=timeout)
+                return True
+        except Exception:
+            pass
+        return False
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=headless, args=["--no-sandbox"])
+        context = browser.new_context(viewport={"width": 1400, "height": 900}, user_agent=UA)
+        page = context.new_page()
+
+        # Heatmap
+        try:
+            page.goto(HEATMAP_URL, wait_until="domcontentloaded", timeout=45000)
+            click_if_exists(page, "text=I agree")
+            click_if_exists(page, "button:has-text('Accept')")
+            page.wait_for_timeout(800)
+            if page.locator("#map").count():
+                page.locator("#map").screenshot(path=str(hm_path))
+            else:
+                page.screenshot(path=str(hm_path), full_page=False)
+            print("Saved", hm_path)
+        except Exception as e:
+            print("Heatmap snapshot fail:", e)
+
+        # Fear & Greed (we only link to it now, but keep snapshot for flexibility)
+        try:
+            page.goto(FEAR_GREED_URL, wait_until="domcontentloaded", timeout=45000)
+            page.evaluate("document.body.style.zoom='1.5'")
+            click_if_exists(page, "button:has-text('Agree')")
+            page.wait_for_timeout(600)
+            page.screenshot(path=str(fg_path), full_page=False)
+            print("Saved", fg_path)
+        except Exception as e:
+            print("Fear&Greed snapshot fail:", e)
+
+        context.close(); browser.close()
+
+# ---------- MAIN ----------
+def main():
+    webroot = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else DEFAULT_WEBROOT)
+    ensure_dir(webroot)
+    print("Writing to webroot:", webroot)
+
+    write_quotes_and_movers(webroot, TICKERS)
+    write_calendar_files(webroot)          # <-- writes calendar-today.json
+    capture_screenshots(webroot, headless=True)
+    write_all_news(webroot, TICKERS)
+
+    print("update_dashboard.py finished.")
+
+if __name__ == "__main__":
+    main()
+
+'===============================================================================================
+
+
+'====================================== RUN OPTIONS ============================================
+
+Option A (hands-off every morning)
+
+Update all data at 5:55 AM
+powershell.exe
+-Command "& 'C:\Users\strol\AppData\Local\Programs\Python\Python313\python.exe' 'C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website\update_dashboard.py' 'C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website'"
+C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website
+
+Start the local server and open the page at 6:00 AM
+$website = "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website"
+$python  = "C:\Users\strol\AppData\Local\Programs\Python\Python313\python.exe"
+$port    = 8000
+
+# Start the local web server if port 8000 isn't already serving
+$up = (Test-NetConnection -ComputerName 127.0.0.1 -Port $port -WarningAction SilentlyContinue).TcpTestSucceeded
+if (-not $up) {
+  Start-Process -FilePath $python -ArgumentList "-m http.server $port" -WorkingDirectory $website -WindowStyle Minimized
+  Start-Sleep -Seconds 2
+}
+
+# Open your dashboard in the default browser
+Start-Process "http://localhost:$port/"
+
+-ExecutionPolicy Bypass -File "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website\start_dashboard.ps1"
+
+
+Option B (manual quick-start whenever you want)
+
+Update data (one line):
+& "C:\Users\strol\AppData\Local\Programs\Python\Python313\python.exe" "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website\update_dashboard.py" "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website"
+
+Start server & open page (one line):
+& "C:\Users\strol\AppData\Local\Programs\Python\Python313\python.exe" -m http.server 8000 --directory "C:\Users\strol\OneDrive\Desktop\Trading - Desktop\00_Scripts\Website"
+
+'===============================================================================================
