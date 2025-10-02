@@ -250,6 +250,26 @@ renderNews();
 
 // NEW: refresh ticker every 60 seconds
 setInterval(renderTicker, 60000);
+
+ // === Heat map refresh ===
+  function refreshHeatmap() {
+    const img = document.getElementById('heatmap-img');
+    if (img) {
+      // Cache-bust so the newest PNG is used
+      img.src = 'snapshots/finviz-heatmap.png?v=' + Date.now();
+    }
+  }
+
+  // Call it on page load
+  refreshHeatmap();
+
+  // Optional: also refresh when you return to the tab
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshHeatmap();
+  });
+
+  // Optional: refresh every 5 minutes
+  // setInterval(refreshHeatmap, 5 * 60 * 1000);  
 </script>
 </body>
 </html>
