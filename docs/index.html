@@ -1,396 +1,253 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Trolinger & Associates</title>
-  <style>
-    :root{
-      --bg:#0f1216;
-      --panel:#161b22;
-      --muted:#9aa4b2;
-      --text:#e8eef7;
-      --green:#22c55e;
-      --red:#ef4444;
-      --chip:#10151c;
-      --chipBorder:#263043;
-      --link:#73b7ff;
-      --shadow: 0 2px 10px rgba(0,0,0,.35);
-      --radius: 12px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,"Noto Sans",sans-serif;
-    }
+<meta charset="utf-8" />
+<title>Trolinger & Associates — Market Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --bg:#0b0c10; --card:#14161a; --muted:#9aa4ad; --text:#e8eef2;
+    --accent:#2dd4bf; --red:#ef4444; --green:#10b981; --border:#20242b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Segoe UI,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  a{color:#8dd3ff;text-decoration:none} a:hover{text-decoration:underline}
 
-    /* Top bar */
-    .top{
-      position:sticky; top:0; z-index:50;
-      display:flex; align-items:center; gap:16px;
-      background:linear-gradient(180deg,#0f1216,#0f1216f2 80%,#0f121600);
-      backdrop-filter:saturate(120%) blur(6px);
-      padding:14px 18px;
-      border-bottom:1px solid #1e2633;
-    }
-    .brand{font-weight:700; letter-spacing:.2px}
-    nav{display:flex; gap:14px; flex-wrap:wrap}
-    nav a{
-      color:var(--muted);
-      text-decoration:none;
-      padding:6px 10px; border-radius:8px;
-    }
-    nav a:hover{background:#1b2230; color:var(--text)}
-    .updated{margin-left:auto; color:var(--muted); font-size:12px; white-space:nowrap}
+  header{position:sticky;top:0;z-index:50;background:rgba(11,12,16,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+  .nav{max-width:1200px;margin:0 auto;display:flex;gap:16px;align-items:center;padding:10px 16px}
+  .nav .brand{font-weight:700;letter-spacing:.3px}
+  .nav a.tab{padding:6px 10px;border-radius:8px;border:1px solid transparent}
+  .nav a.tab:hover{border-color:var(--border);background:#101216}
+  #lastUpdated{color:var(--muted);margin-left:auto;font-size:.92rem}
 
-    /* Content wrapper */
-    .wrap{max-width:1200px; margin:20px auto 56px; padding:0 16px}
+  main{max-width:1200px;margin:18px auto;padding:0 16px}
+  section[id]{scroll-margin-top:78px;} /* <— fixes misaligned anchor jumps under sticky header */
 
-    /* Ticker chips row */
-    .chips{
-      display:flex; gap:10px; flex-wrap:wrap;
-      margin:6px 0 18px 0;
-    }
-    .chip{
-      display:flex; align-items:center; gap:10px;
-      background:var(--chip);
-      border:1px solid var(--chipBorder);
-      border-radius:999px;
-      padding:8px 12px;
-      box-shadow:var(--shadow);
-    }
-    .chip .sym{font-weight:700}
-    .chip .price{opacity:.95}
-    .chip .chg{font-weight:700}
-    .up{color:var(--green)} .down{color:var(--red)}
+  /* Ticker */
+  .ticker-wrap{overflow:hidden;white-space:nowrap;border:1px solid var(--border);background:#0f1116;border-radius:10px}
+  .ticker{display:inline-block;padding:8px 0;animation:scroll 40s linear infinite}
+  .chip{display:inline-flex;gap:6px;align-items:center;padding:4px 10px;margin:0 8px;border-radius:999px;background:#0c0e13;border:1px solid #1a2030}
+  .chip .pct.up{color:var(--green)} .chip .pct.down{color:var(--red)}
+  @keyframes scroll{from{transform:translateX(0)} to{transform:translateX(-50%)}}
 
-    /* Panels / cards */
-    .card{
-      background:var(--panel);
-      border:1px solid #1f2a3a;
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:16px;
-      margin:14px 0;
-    }
-    .card h2{margin:0 0 12px 0; font-size:18px}
+  /* Cards / grids */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+  h2{margin:.2rem 0 .6rem;font-size:1.15rem}
+  .muted{color:var(--muted);font-size:.92rem}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media (max-width:980px){.grid2,.grid3{grid-template-columns:1fr}}
 
-    /* Econ calendar */
-    .table{width:100%; border-collapse:collapse}
-    .table th,.table td{
-      padding:10px 10px; border-top:1px solid #233042;
-      vertical-align:top;
-    }
-    .table th{color:var(--muted); font-weight:600; text-align:left}
-    .table tr:first-child th, .table tr:first-child td{border-top:0}
-    .muted{color:var(--muted)}
-    .links-row{display:flex; gap:18px; flex-wrap:wrap; margin-top:8px}
-    a{color:var(--link)}
-    a:hover{opacity:.9}
+  /* Tables */
+  table{width:100%;border-collapse:collapse}
+  th,td{border-bottom:1px solid var(--border);padding:8px 6px;text-align:left}
+  th{color:#b8c4cc;font-weight:600}
 
-    /* Winners / Losers grid */
-    .grid-2{
-      display:grid; gap:14px; grid-template-columns:1fr; 
-    }
-    @media (min-width: 960px){
-      .grid-2{grid-template-columns:1fr 1fr}
-    }
-    .compact-table{width:100%; border-collapse:collapse}
-    .compact-table th,.compact-table td{
-      padding:9px 10px; border-top:1px solid #233042;
-      vertical-align:middle;
-    }
-    .compact-table th{color:var(--muted); text-align:left}
-    .name{color:#d7dfeb}
-    .num{white-space:nowrap; text-align:right}
+  /* Snapshots */
+  .snapshot{width:100%;max-height:780px;object-fit:contain;background:#0e1015;border:1px solid var(--border);border-radius:10px}
 
-    /* Heat map image */
-    .heatmap-img{
-      display:block; width:100%; height:auto; border-radius:10px;
-      border:1px solid #223044;
-    }
+  /* Winners/Losers colors */
+  .ok{color:var(--green)} .bad{color:var(--red)}
 
-    /* News grid */
-    .news-grid{
-      display:grid; gap:14px;
-      grid-template-columns:repeat(1,minmax(0,1fr));
-    }
-    @media (min-width:900px){
-      .news-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-    }
-    .news-card h3{margin:0 0 8px 0; font-size:16px}
-    .news-card ul{margin:0; padding-left:18px}
-    .news-card li{margin:8px 0}
-    .news-card time{color:var(--muted); font-size:12px}
-    .placeholder{color:var(--muted)}
-    .tip{color:var(--muted); font-size:12px; margin-top:8px}
-  </style>
+  /* News bullets + collapsible detail */
+  .news-bullets ul{margin:.3rem 0 0 1.1rem;padding:0}
+  .news-bullets li{margin:.32rem 0; list-style: disc;}
+  .news-item{cursor:pointer}
+  .news-item .meta{color:var(--muted); font-size:.85rem; margin-left:.4rem}
+  .collapse{max-height:0; overflow:hidden; transition:max-height .22s ease}
+  .collapse.open{max-height:220px}
+  .news-detail{border-left:2px solid var(--border); margin:.25rem 0 .5rem 1rem; padding:.45rem .6rem; background:#10141b;border-radius:8px}
+</style>
 </head>
 <body>
-  <header class="top">
+<header>
+  <nav class="nav">
     <div class="brand">Trolinger &amp; Associates</div>
-    <nav>
-      <a href="#calendar">Economic Calendar</a>
-      <a href="#winners-losers">Winners &amp; Losers</a>
-      <a href="#heatmap">Heat Map</a>
-      <a href="#news">Big Cap News</a>
-    </nav>
-    <div class="updated" id="lastUpdated">Last updated —</div>
-  </header>
+    <a class="tab" href="#calendar-today">Economic Calendar</a>
+    <a class="tab" href="#winners-losers">Winners &amp; Losers</a>
+    <a class="tab" href="#heatmap">Heat Map</a>
+    <a class="tab" href="#news">Big Cap News</a>
+    <div id="lastUpdated"></div>
+  </nav>
+</header>
 
-  <main class="wrap">
-    <!-- Ticker chips -->
-    <div class="chips" id="chips"></div>
+<main>
+  <!-- Big Cap Ticker -->
+  <section aria-label="Big Cap Ticker" style="margin:8px 0 18px">
+    <div class="ticker-wrap">
+      <div id="ticker1" class="ticker"></div>
+      <div id="ticker2" class="ticker" aria-hidden="true"></div>
+    </div>
+    <div class="muted" style="margin-top:6px">
+      Reads <code>ticker-prices.json</code> if present. Otherwise shows placeholders.
+    </div>
+  </section>
 
-    <!-- Economic Calendar -->
-    <section id="calendar" class="card">
-      <h2>Economic Calendar — Today</h2>
-      <table class="table" id="calendarTable">
-        <thead>
-          <tr>
-            <th style="width:90px">Time</th>
-            <th>Release</th>
-            <th style="width:90px">Period</th>
-            <th style="width:110px">Actual</th>
-            <th style="width:150px">Forecast / Median</th>
-            <th style="width:110px">Previous</th>
-          </tr>
-        </thead>
-        <tbody id="calendarBody">
-          <tr><td colspan="6" class="muted">No entries for today.</td></tr>
-        </tbody>
-      </table>
-      <div class="links-row">
-        <a target="_blank" href="https://www.marketwatch.com/economy-politics/calendar">Open full MarketWatch calendar →</a>
-      </div>
-    </section>
+  <!-- ECONOMIC CALENDAR (TODAY) — now at the top -->
+  <section id="calendar-today" class="card" style="margin-top:12px">
+    <h2>Economic Calendar — Today</h2>
+    <div id="calendarToday"></div>
+    <div class="muted" style="margin-top:8px">
+      <a target="_blank" href="https://www.marketwatch.com/economy-politics/calendar">Open full MarketWatch calendar →</a>
+    </div>
+  </section>
 
-    <!-- Winners / Losers -->
-    <section id="winners-losers" class="grid-2">
-      <div class="card">
-        <h2>Top Winners</h2>
-        <table class="compact-table" id="winnersTable">
-          <thead>
-            <tr>
-              <th style="width:84px">Symbol</th>
-              <th>Name</th>
-              <th class="num" style="width:110px">Price</th>
-              <th class="num" style="width:60px">%</th>
-            </tr>
-          </thead>
-          <tbody id="winnersBody">
-            <tr><td colspan="4" class="muted">No data</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card">
-        <h2>Top Losers</h2>
-        <table class="compact-table" id="losersTable">
-          <thead>
-            <tr>
-              <th style="width:84px">Symbol</th>
-              <th>Name</th>
-              <th class="num" style="width:110px">Price</th>
-              <th class="num" style="width:60px">%</th>
-            </tr>
-          </thead>
-          <tbody id="losersBody">
-            <tr><td colspan="4" class="muted">No data</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+  <!-- Winners / Losers -->
+  <section id="winners-losers" class="grid2" style="margin-top:16px">
+    <div class="card">
+      <h2>Top Winners</h2>
+      <table id="tbl-winners"><thead><tr><th>Symbol</th><th>Name</th><th>Price</th><th>%</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="card">
+      <h2>Top Losers</h2>
+      <table id="tbl-losers"><thead><tr><th>Symbol</th><th>Name</th><th>Price</th><th>%</th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
 
-    <!-- Heat Map -->
-    <section id="heatmap" class="card">
-      <h2>Market Heat Map</h2>
-      <img id="heatmapImg" class="heatmap-img" src="snapshots/finviz-heatmap.png" alt="Finviz Heatmap snapshot" />
-      <div class="links-row">
-        <a target="_blank" href="https://finviz.com/map.ashx">Open Heat Map Index →</a>
-        <a target="_blank" href="https://money.cnn.com/data/fear-and-greed/">Open Fear &amp; Greed Index →</a>
-      </div>
-      <div class="tip">If the snapshot hasn’t appeared yet, it will show once your update job writes <code>snapshots/finviz-heatmap.png</code>.</div>
-    </section>
+  <!-- HEAT MAP — full width with links below -->
+  <section id="heatmap" class="card" style="margin-top:16px">
+    <h2>Market Heat Map</h2>
+    <img class="snapshot" src="heatmap-snapshot.png" alt="Finviz Heatmap snapshot" />
+    <div class="muted" style="margin-top:8px;display:flex;gap:18px;flex-wrap:wrap">
+      <a target="_blank" href="https://finviz.com/map.ashx">Open Heat Map Index →</a>
+      <a target="_blank" href="https://money.cnn.com/data/fear-and-greed/">Open Fear &amp; Greed Index →</a>
+    </div>
+  </section>
 
-    <!-- News -->
-    <section id="news" class="card">
-      <h2>Big Cap News</h2>
-      <div class="news-grid" id="newsGrid"></div>
-    </section>
-  </main>
+  <!-- Big Cap News — 3 columns, alphabetized tickers -->
+  <section id="news" class="card" style="margin-top:16px">
+    <h2>Big Cap News</h2>
+    <div id="news-grid" class="grid3"></div>
+    <div class="muted" style="margin-top:6px">Bullet headlines; click to expand details. Reads local <code>news-*.json</code>.</div>
+  </section>
 
-  <script>
-    // ---------- Config ----------
-    const CHIP_SYMBOLS = ["AMZN","MSFT","META","BA","GOOGL","TSLA"]; // small row at top
-    const BIG_CAPS = ["AAPL","AMD","AMZN","BA","BABA","COST"]; // 3-per-row news cards
-    const JSON_OPTS = { headers: { "Cache-Control":"no-cache" } };
+  <footer class="muted" style="margin:24px 0 10px">Snapshots &amp; data are generated around 6:00am by local scripts.</footer>
+</main>
 
-    function bust(url){
-      const t = Date.now();
-      return url + (url.includes('?') ? '&' : '?') + 'v=' + t;
-    }
-    async function loadJSON(url){
-      try{
-        const r = await fetch(bust(url), JSON_OPTS);
-        if(!r.ok) throw new Error(r.status + ' ' + r.statusText);
-        return await r.json();
-      }catch(e){
-        return null;
-      }
-    }
-    function fmtPct(x){
-      if(x == null || x === '--') return '--';
-      const s = (x>0?'+':'') + x.toFixed(2) + '%';
-      return s;
-    }
-    function fmtPrice(x){
-      return (x==null || x==='--') ? '--' : x.toFixed(2);
-    }
-    function lastUpdatedFrom(json){
-      if(json && json.updated){
-        const d = new Date(json.updated);
-        if(!isNaN(d)) return d;
-      }
-      return new Date();
-    }
+<script>
+const BIG_CAPS = ["AAPL","AMD","AMZN","BA","BABA","COST","DIS","GOOGL","INTC","IWM","META","MSFT","MU","NFLX","NVDA","TSLA","TXN","WDAY"];
+const SORTED = [...BIG_CAPS].sort();
+document.getElementById('lastUpdated').textContent = 'Last updated ' + new Date().toLocaleString();
 
-    // ---------- Ticker chips ----------
-    async function renderChips(){
-      const data = await loadJSON('ticker-prices.json');
-      const chips = document.getElementById('chips');
-      chips.innerHTML = '';
-      const map = new Map();
-      if(data && Array.isArray(data.data)){
-        for(const r of data.data) map.set(r.symbol, r);
-        // last updated
-        const u = lastUpdatedFrom(data);
-        document.getElementById('lastUpdated').textContent =
-          'Last updated ' + u.toLocaleString();
-      }
-      for(const sym of CHIP_SYMBOLS){
-        const r = map.get(sym);
-        const price = r ? r.price : '--';
-        const pct = r ? r.changePct : 0;
-        const cls = r ? (pct>=0 ? 'up':'down') : 'muted';
-        const pctTxt = r ? ((pct>=0?'+':'') + pct.toFixed(2) + '%') : '--';
-        const el = document.createElement('div');
-        el.className = 'chip';
-        el.innerHTML = `
-          <div class="sym">${sym}</div>
-          <div class="price">${fmtPrice(price)}</div>
-          <div class="chg ${cls}">${pctTxt}</div>
-        `;
-        chips.appendChild(el);
-      }
-    }
+/* Smooth scroll (still useful, but CSS scroll-margin-top handles the stop position) */
+document.querySelectorAll('a.tab').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    const el = document.querySelector(a.getAttribute('href'));
+    el && el.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
 
-    // ---------- Calendar ----------
-    async function renderCalendar(){
-      const tbody = document.getElementById('calendarBody');
-      const json = await loadJSON('calendar-today.json');
-      tbody.innerHTML = '';
-      if(!json || !Array.isArray(json.rows) || json.rows.length===0){
-        tbody.innerHTML = `<tr><td colspan="6" class="muted">No entries for today.</td></tr>`;
-        return;
-      }
-      for(const r of json.rows){
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${r.time ?? ''}</td>
-          <td>${r.title ?? ''}</td>
-          <td>${r.period ?? ''}</td>
-          <td>${r.actual ?? ''}</td>
-          <td>${r.forecast ?? ''}</td>
-          <td>${r.previous ?? ''}</td>
-        `;
-        tbody.appendChild(tr);
-      }
-    }
+async function loadJSON(path){
+  try{ const r=await fetch(path,{cache:'no-cache'}); if(!r.ok) throw 0; return await r.json(); }
+  catch{ return null; }
+}
 
-    // ---------- Winners / Losers ----------
-    function rowsToTable(tbodyId, rows){
-      const tb = document.getElementById(tbodyId);
-      tb.innerHTML = '';
-      if(!rows || rows.length===0){
-        tb.innerHTML = `<tr><td colspan="4" class="muted">No data</td></tr>`;
-        return;
-      }
-      for(const r of rows){
-        const pct = (r.changePct ?? 0);
-        const cls = pct>=0 ? 'up' : 'down';
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${r.symbol ?? ''}</td>
-          <td class="name">${r.name ?? ''}</td>
-          <td class="num">${fmtPrice(r.price)}</td>
-          <td class="num ${cls}">${fmtPct(pct)}</td>
-        `;
-        tb.appendChild(tr);
-      }
-    }
-    async function renderWinnersLosers(){
-      const winners = await loadJSON('winners.json');
-      const losers  = await loadJSON('losers.json');
-      rowsToTable('winnersBody', winners?.rows || []);
-      rowsToTable('losersBody',  losers?.rows  || []);
-    }
+/* ---------- Ticker ---------- */
+async function renderTicker(){
+  // NEW: cache-busted fetch so the browser always grabs the latest file
+  let data = await loadJSON('ticker-prices.json?v=' + Date.now());
 
-    // ---------- Heat map snapshot presence (optional hint) ----------
-    async function checkHeatmap(){
-      const img = document.getElementById('heatmapImg');
-      // add cache-bust so a new file shows up when replaced
-      img.src = bust('snapshots/finviz-heatmap.png');
-      img.onerror = () => {
-        // keep the alt text; optional could show small note
-      };
-    }
+  if(!Array.isArray(data) || !data.length){
+    data = SORTED.map(s=>({symbol:s,price:'',changePct:''}));
+  }
+  const line = data.map(x=>{
+    const pct = (x.changePct ?? '').toString();
+    const cls = pct.startsWith('+') ? 'pct up' : (pct.startsWith('-') ? 'pct down' : 'pct');
+    return `<span class="chip"><span>${x.symbol}</span><span>${x.price??''}</span><span class="${cls}">${pct}</span></span>`;
+  }).join(' ') + ' ';
+  document.getElementById('ticker1').innerHTML = line + line;
+  document.getElementById('ticker2').innerHTML = line + line;
+}
 
-    // ---------- News ----------
-    function newsCard(symbol, items){
-      const wrap = document.createElement('div');
-      wrap.className = 'card news-card';
-      wrap.innerHTML = `<h3>${symbol}</h3>`;
-      const ul = document.createElement('ul');
-      if(items && items.length){
-        for(const it of items.slice(0,3)){
-          const li = document.createElement('li');
-          const when = it.time ? new Date(it.time) : null;
-          li.innerHTML = `
-            <a target="_blank" href="${it.url}">${it.title}</a>
-            ${when ? ` <time> · ${when.toUTCString().replace(' GMT','')}</time>` : ''}
-          `;
-          ul.appendChild(li);
-        }
-      }else{
-        const li = document.createElement('li');
-        li.className = 'placeholder';
-        li.textContent = 'No recent articles.';
-        ul.appendChild(li);
-      }
-      wrap.appendChild(ul);
-      return wrap;
-    }
-    async function renderNews(){
-      const grid = document.getElementById('newsGrid');
-      grid.innerHTML = '';
-      for(const sym of BIG_CAPS){
-        const j = await loadJSON(`news-${sym}.json`);
-        grid.appendChild(newsCard(sym, j?.items || j?.rows || []));
-      }
-    }
+/* ---------- Winners / Losers ---------- */
+function rowsFrom(arr,neg=false){
+  if(!Array.isArray(arr) || !arr.length) return '<tr><td colspan="4" class="muted">No data</td></tr>';
+  return arr.map(o=>{
+    const pct = o.changePct ?? '';
+    const cls = String(pct).startsWith('-') || neg ? 'bad' : 'ok';
+    return `<tr><td>${o.symbol||''}</td><td>${o.name||''}</td><td>${o.price||''}</td><td class="${cls}">${pct}</td></tr>`;
+  }).join('');
+}
+async function renderWinnersLosers(){
+  const w = await loadJSON('winners.json');
+  const l = await loadJSON('losers.json');
+  document.querySelector('#tbl-winners tbody').innerHTML = rowsFrom(w||[]);
+  document.querySelector('#tbl-losers tbody').innerHTML = rowsFrom(l||[], true);
+}
 
-    // ---------- Init ----------
-    renderChips();
-    renderCalendar();
-    renderWinnersLosers();
-    checkHeatmap();
-    renderNews();
+/* ---------- Economic Calendar (TODAY) ---------- */
+async function renderCalendarToday(){
+  const el = document.getElementById('calendarToday');
+  const data = await loadJSON('calendar-today.json');  // new file written by the updater
+  if(!Array.isArray(data) || !data.length){ el.innerHTML='<div class="muted">No entries for today.</div>'; return; }
+  const rows = data.map(it=>`
+    <tr>
+      <td>${it.time||''}</td>
+      <td>${it.release||it.event||''}</td>
+      <td>${it.period||''}</td>
+      <td>${it.actual||''}</td>
+      <td>${it.median||it.forecast||''}</td>
+      <td>${it.previous||''}</td>
+    </tr>`).join('');
+  el.innerHTML = `<table>
+    <thead><tr><th>Time</th><th>Release</th><th>Period</th><th>Actual</th><th>Forecast / Median</th><th>Previous</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+}
 
-    // Refresh chips every 60s during market hours
-    setInterval(renderChips, 60000);
-  </script>
+/* ---------- Big Cap News (3 columns, alphabetized) ---------- */
+function buildTickerNews(ticker, articles){
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `<h3 style="margin:.1rem 0 .4rem">${ticker}</h3>
+                    <div class="news-bullets" id="nb-${ticker}"></div>`;
+  const host = card.querySelector('.news-bullets');
+
+  if(!articles || !articles.length){ host.innerHTML = `<p class="muted">No recent articles.</p>`; return card; }
+
+  const ul = document.createElement('ul'); host.appendChild(ul);
+  articles.slice(0,3).forEach((it, idx)=>{
+    const li = document.createElement('li'); li.className='news-item';
+    const title = (it.title || 'Untitled').trim();
+    const link = it.link || '#';
+    const when = (it.published || '').replace(' +0000','');
+    let hostName=''; try{ hostName = new URL(link).hostname; }catch{}
+    li.innerHTML = `
+      <span class="headline">${title}</span>
+      ${when ? `<span class="meta">· ${when}</span>`:''}
+      <div class="collapse" id="nd-${ticker}-${idx}">
+        <div class="news-detail">
+          <div style="margin-bottom:.35rem"><a href="${link}" target="_blank" rel="noopener">Open article →</a></div>
+          <div class="muted">Source: <span>${hostName || 'link'}</span></div>
+        </div>
+      </div>`;
+    li.addEventListener('click', e=>{
+      if(e.target.tagName.toLowerCase()==='a') return;
+      li.querySelector('.collapse').classList.toggle('open');
+    });
+    ul.appendChild(li);
+  });
+  return card;
+}
+async function renderNews(){
+  const grid = document.getElementById('news-grid');
+  grid.innerHTML = '';
+  for(const t of SORTED){
+    const data = await loadJSON(`news-${t.toLowerCase()}.json`) || [];
+    grid.appendChild(buildTickerNews(t, data));
+  }
+}
+
+/* ---------- Init ---------- */
+renderTicker();
+renderWinnersLosers();
+renderCalendarToday();
+renderNews();
+
+// NEW: refresh ticker every 60 seconds
+setInterval(renderTicker, 60000);
+</script>
 </body>
 </html>
+
+
