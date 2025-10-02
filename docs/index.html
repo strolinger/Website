@@ -251,7 +251,35 @@ renderNews();
 // NEW: refresh ticker every 60 seconds
 setInterval(renderTicker, 60000);
 
- // === Heat map refresh ===
+  // cache-busting JSON fetch
+  async function loadJSON(url) {
+    const sep = url.includes('?') ? '&' : '?';
+    const res = await fetch(url + sep + 'v=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return res.json();
+  }
+
+  // refresh the heatmap snapshot
+  function refreshHeatmap() {
+    const img = document.getElementById('heatmap-img');
+    if (img) img.src = 'snapshots/finviz-heatmap.png?v=' + Date.now();
+  }
+
+  // load ticker JSON (wire this into your existing renderer if you have one)
+  async function loadTickers() {
+    try {
+      const data = await loadJSON('ticker-prices.json');
+      if (typeof renderTickerPills === 'function') {
+        renderTickerPills(data);
+      } else {
+        console.log('ticker-prices.json loaded', data);
+      }
+    } catch (e) {
+      console.warn('Could not load ticker-prices.json', e);
+    }
+  }
+  
+  // === Heat map refresh ===
   function refreshHeatmap() {
     const img = document.getElementById('heatmap-img');
     if (img) {
