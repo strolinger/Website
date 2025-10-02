@@ -1,28 +1,63 @@
-name: daily-site-refresh
+name: intraday-ticker
+
 on:
-  schedule: [ { cron: "0 10 * * *" } ]   # ≈ 6:00am ET; adjust for DST if you want
+  schedule:
+    - cron: "*/15 * * * *"   # every ~15 minutes
   workflow_dispatch:
 
-permissions: { contents: write }
+permissions:
+  contents: write
+
+# Prevent two runs from pushing at the same time
+concurrency:
+  group: intraday-ticker
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-      - run: |
-          python -m pip install --upgrade pip
-          pip install playwright requests feedparser beautifulsoup4 yfinance
-          python -m playwright install --with-deps chromium
-      - name: Build daily data/snapshots
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # needed for clean pulls/pushes
+          persist-credentials: true # uses GITHUB_TOKEN for push
+
+      - name: Show branch
         run: |
-          python "Website/update_dashboard.py" "Website"
-      - name: Commit updates
+          git rev-parse --abbrev-ref HEAD
+          git status
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps (pin wheels to avoid building)
         run: |
-          git config user.name "github-actions"
-          git config user.email "actions@users.noreply.github.com"
-          git add Website/*.json Website/*.png || true
-          git commit -m "Daily refresh" || echo "No changes"
-          git push
+          python -m pip install --upgrade pip setuptools wheel
+          pip install "numpy==2.0.2" "pandas==2.2.2" --only-binary=:all:
+          pip install "yfinance==0.2.43"
+
+      - name: Run price updater
+        run: |
+          python scripts/update_quotes.py docs/ticker-prices.json
+
+      - name: Prepare commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/ticker-prices.json || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+      - name: Pull fast-forward & push
+        run: |
+          # pull fast-forward only to avoid merge commits in Actions
+          git pull --ff-only origin main
+          git commit -m "Update ticker prices [skip ci]"
+          git push origin HEAD:main
+
