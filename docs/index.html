@@ -1,317 +1,396 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Trolinger & Associates — Market Dashboard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trolinger & Associates</title>
   <style>
     :root{
-      --bg:#0f1115; --panel:#151a23; --edge:#1e2636;
-      --text:#e7ecf5; --muted:#9aa3b2; --chip:#1d2431; --chipEdge:#2a3241;
-      --up:#26c281; --down:#ff5c5c; --link:#6db8ff;
+      --bg:#0f1216;
+      --panel:#161b22;
+      --muted:#9aa4b2;
+      --text:#e8eef7;
+      --green:#22c55e;
+      --red:#ef4444;
+      --chip:#10151c;
+      --chipBorder:#263043;
+      --link:#73b7ff;
+      --shadow: 0 2px 10px rgba(0,0,0,.35);
+      --radius: 12px;
     }
     *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-    a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
-    header{padding:16px 20px;border-bottom:1px solid var(--edge);background:linear-gradient(0deg,#111520,#0d1117)}
-    header h1{margin:0;font-size:18px}
-    header small{color:var(--muted)}
-    nav{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
-    nav a{color:var(--muted)} nav a:hover{color:var(--text)}
-    main{max-width:1200px;margin:0 auto;padding:18px}
-    .card{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:16px;margin-bottom:18px}
-    h2{margin:0 0 10px 0;font-size:18px}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,"Noto Sans",sans-serif;
+    }
+
+    /* Top bar */
+    .top{
+      position:sticky; top:0; z-index:50;
+      display:flex; align-items:center; gap:16px;
+      background:linear-gradient(180deg,#0f1216,#0f1216f2 80%,#0f121600);
+      backdrop-filter:saturate(120%) blur(6px);
+      padding:14px 18px;
+      border-bottom:1px solid #1e2633;
+    }
+    .brand{font-weight:700; letter-spacing:.2px}
+    nav{display:flex; gap:14px; flex-wrap:wrap}
+    nav a{
+      color:var(--muted);
+      text-decoration:none;
+      padding:6px 10px; border-radius:8px;
+    }
+    nav a:hover{background:#1b2230; color:var(--text)}
+    .updated{margin-left:auto; color:var(--muted); font-size:12px; white-space:nowrap}
+
+    /* Content wrapper */
+    .wrap{max-width:1200px; margin:20px auto 56px; padding:0 16px}
+
+    /* Ticker chips row */
+    .chips{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin:6px 0 18px 0;
+    }
+    .chip{
+      display:flex; align-items:center; gap:10px;
+      background:var(--chip);
+      border:1px solid var(--chipBorder);
+      border-radius:999px;
+      padding:8px 12px;
+      box-shadow:var(--shadow);
+    }
+    .chip .sym{font-weight:700}
+    .chip .price{opacity:.95}
+    .chip .chg{font-weight:700}
+    .up{color:var(--green)} .down{color:var(--red)}
+
+    /* Panels / cards */
+    .card{
+      background:var(--panel);
+      border:1px solid #1f2a3a;
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+      margin:14px 0;
+    }
+    .card h2{margin:0 0 12px 0; font-size:18px}
+
+    /* Econ calendar */
+    .table{width:100%; border-collapse:collapse}
+    .table th,.table td{
+      padding:10px 10px; border-top:1px solid #233042;
+      vertical-align:top;
+    }
+    .table th{color:var(--muted); font-weight:600; text-align:left}
+    .table tr:first-child th, .table tr:first-child td{border-top:0}
     .muted{color:var(--muted)}
-    /* chips */
-    .chips{display:flex;gap:10px;flex-wrap:wrap}
-    .chip{background:var(--chip);border:1px solid var(--chipEdge);border-radius:18px;padding:8px 12px;display:flex;gap:10px;align-items:center;min-width:86px;justify-content:space-between}
-    .sym{font-weight:700;opacity:.9}
-    .price{opacity:.95}
-    .pct{font-weight:700}
-    .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--muted)}
-    /* table */
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px 10px;border-top:1px solid var(--edge)}
-    th{text-align:left;color:#cbd5e1;font-weight:600}
-    /* two-col layout */
-    .grid-2{display:grid;grid-template-columns:1fr;gap:18px}
-    @media (min-width:900px){.grid-2{grid-template-columns:1fr 1fr}}
-    /* news grid */
-    .news-grid{display:grid;grid-template-columns:1fr;gap:18px}
-    @media (min-width:900px){.news-grid{grid-template-columns:1fr 1fr}}
-    .news-card{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:12px}
-    .news-card h3{margin:0 0 8px 0;font-size:15px}
-    .news-card ul{margin:0;padding-left:18px}
-    .news-card li{margin:6px 0}
-    /* heat map image */
-    #heatmap-img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--edge)}
-    .links{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}
+    .links-row{display:flex; gap:18px; flex-wrap:wrap; margin-top:8px}
+    a{color:var(--link)}
+    a:hover{opacity:.9}
+
+    /* Winners / Losers grid */
+    .grid-2{
+      display:grid; gap:14px; grid-template-columns:1fr; 
+    }
+    @media (min-width: 960px){
+      .grid-2{grid-template-columns:1fr 1fr}
+    }
+    .compact-table{width:100%; border-collapse:collapse}
+    .compact-table th,.compact-table td{
+      padding:9px 10px; border-top:1px solid #233042;
+      vertical-align:middle;
+    }
+    .compact-table th{color:var(--muted); text-align:left}
+    .name{color:#d7dfeb}
+    .num{white-space:nowrap; text-align:right}
+
+    /* Heat map image */
+    .heatmap-img{
+      display:block; width:100%; height:auto; border-radius:10px;
+      border:1px solid #223044;
+    }
+
+    /* News grid */
+    .news-grid{
+      display:grid; gap:14px;
+      grid-template-columns:repeat(1,minmax(0,1fr));
+    }
+    @media (min-width:900px){
+      .news-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    }
+    .news-card h3{margin:0 0 8px 0; font-size:16px}
+    .news-card ul{margin:0; padding-left:18px}
+    .news-card li{margin:8px 0}
+    .news-card time{color:var(--muted); font-size:12px}
+    .placeholder{color:var(--muted)}
+    .tip{color:var(--muted); font-size:12px; margin-top:8px}
   </style>
 </head>
 <body>
-  <header>
-    <h1>Trolinger &amp; Associates <small id="last-updated" class="muted"></small></h1>
+  <header class="top">
+    <div class="brand">Trolinger &amp; Associates</div>
     <nav>
       <a href="#calendar">Economic Calendar</a>
       <a href="#winners-losers">Winners &amp; Losers</a>
       <a href="#heatmap">Heat Map</a>
       <a href="#news">Big Cap News</a>
     </nav>
+    <div class="updated" id="lastUpdated">Last updated —</div>
   </header>
 
-  <main>
-    <!-- Tickers -->
-    <section class="card" id="tickers">
-      <h2>Tickers</h2>
-      <div id="ticker-strip" class="chips" aria-live="polite"></div>
-      <div class="muted" style="margin-top:8px">
-        Reads <code>ticker-prices.json</code> if present. Otherwise shows placeholders.
-      </div>
-    </section>
+  <main class="wrap">
+    <!-- Ticker chips -->
+    <div class="chips" id="chips"></div>
 
     <!-- Economic Calendar -->
-    <section class="card" id="calendar">
+    <section id="calendar" class="card">
       <h2>Economic Calendar — Today</h2>
-      <div class="muted" id="cal-empty" style="display:none">No entries for today.</div>
-      <div style="overflow-x:auto">
-        <table id="cal-table">
-          <thead>
-            <tr>
-              <th style="width:90px">Time</th>
-              <th>Release</th>
-              <th style="width:110px">Period</th>
-              <th style="width:110px">Actual</th>
-              <th style="width:150px">Forecast / Median</th>
-              <th style="width:110px">Previous</th>
-            </tr>
-          </thead>
-          <tbody id="cal-body"></tbody>
-        </table>
+      <table class="table" id="calendarTable">
+        <thead>
+          <tr>
+            <th style="width:90px">Time</th>
+            <th>Release</th>
+            <th style="width:90px">Period</th>
+            <th style="width:110px">Actual</th>
+            <th style="width:150px">Forecast / Median</th>
+            <th style="width:110px">Previous</th>
+          </tr>
+        </thead>
+        <tbody id="calendarBody">
+          <tr><td colspan="6" class="muted">No entries for today.</td></tr>
+        </tbody>
+      </table>
+      <div class="links-row">
+        <a target="_blank" href="https://www.marketwatch.com/economy-politics/calendar">Open full MarketWatch calendar →</a>
       </div>
-      <div class="links"><a target="_blank" href="https://www.marketwatch.com/economy-politics/calendar">Open full MarketWatch calendar →</a></div>
     </section>
 
     <!-- Winners / Losers -->
-    <section class="grid-2" id="winners-losers">
+    <section id="winners-losers" class="grid-2">
       <div class="card">
         <h2>Top Winners</h2>
-        <div class="muted" id="win-empty" style="display:none">No data.</div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th style="width:100px">Symbol</th><th>Name</th><th style="width:110px">Price</th><th style="width:80px">%</th></tr></thead>
-            <tbody id="winners-body"></tbody>
-          </table>
-        </div>
+        <table class="compact-table" id="winnersTable">
+          <thead>
+            <tr>
+              <th style="width:84px">Symbol</th>
+              <th>Name</th>
+              <th class="num" style="width:110px">Price</th>
+              <th class="num" style="width:60px">%</th>
+            </tr>
+          </thead>
+          <tbody id="winnersBody">
+            <tr><td colspan="4" class="muted">No data</td></tr>
+          </tbody>
+        </table>
       </div>
       <div class="card">
         <h2>Top Losers</h2>
-        <div class="muted" id="lose-empty" style="display:none">No data.</div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th style="width:100px">Symbol</th><th>Name</th><th style="width:110px">Price</th><th style="width:80px">%</th></tr></thead>
-            <tbody id="losers-body"></tbody>
-          </table>
-        </div>
+        <table class="compact-table" id="losersTable">
+          <thead>
+            <tr>
+              <th style="width:84px">Symbol</th>
+              <th>Name</th>
+              <th class="num" style="width:110px">Price</th>
+              <th class="num" style="width:60px">%</th>
+            </tr>
+          </thead>
+          <tbody id="losersBody">
+            <tr><td colspan="4" class="muted">No data</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
     <!-- Heat Map -->
-    <section class="card" id="heatmap">
+    <section id="heatmap" class="card">
       <h2>Market Heat Map</h2>
-      <img id="heatmap-img" alt="Finviz Heatmap snapshot"/>
-      <div id="heatmap-missing" class="muted" style="display:none;margin-top:8px">
-        Snapshot not found yet. It will appear after your update job writes
-        <code>snapshots/finviz-heatmap.png</code>.
-      </div>
-      <div class="links">
+      <img id="heatmapImg" class="heatmap-img" src="snapshots/finviz-heatmap.png" alt="Finviz Heatmap snapshot" />
+      <div class="links-row">
         <a target="_blank" href="https://finviz.com/map.ashx">Open Heat Map Index →</a>
         <a target="_blank" href="https://money.cnn.com/data/fear-and-greed/">Open Fear &amp; Greed Index →</a>
       </div>
+      <div class="tip">If the snapshot hasn’t appeared yet, it will show once your update job writes <code>snapshots/finviz-heatmap.png</code>.</div>
     </section>
 
-    <!-- Big Cap News -->
-    <section class="card" id="news">
+    <!-- News -->
+    <section id="news" class="card">
       <h2>Big Cap News</h2>
-      <div id="news-grid" class="news-grid"></div>
+      <div class="news-grid" id="newsGrid"></div>
     </section>
   </main>
 
   <script>
-    /* --------------------- Config --------------------- */
-    const TICKERS = [
-      "TSLA","TXN","WDAY","AAPL","AMD","AMZN","BA","BABA",
-      "COST","DIS","GOOGL","INTC","IWM","META","MSFT","MU","NVDA"
-    ];
+    // ---------- Config ----------
+    const CHIP_SYMBOLS = ["AMZN","MSFT","META","BA","GOOGL","TSLA"]; // small row at top
+    const BIG_CAPS = ["AAPL","AMD","AMZN","BA","BABA","COST"]; // 3-per-row news cards
+    const JSON_OPTS = { headers: { "Cache-Control":"no-cache" } };
 
-    const FILES = {
-      ticker: "ticker-prices.json",
-      calPrimary: "calendar-today.json",
-      calFallback: "today.json",
-      winners: "winners.json",
-      losers:  "losers.json",
-      newsPrefix: "news-",   // + ticker.toLowerCase() + ".json"
-      heatmap: "snapshots/finviz-heatmap.png"
-    };
-
-    /* -------------------- Utilities ------------------- */
-    const $ = sel => document.querySelector(sel);
-
+    function bust(url){
+      const t = Date.now();
+      return url + (url.includes('?') ? '&' : '?') + 'v=' + t;
+    }
     async function loadJSON(url){
       try{
-        const r = await fetch(url + "?v=" + Date.now(), {cache:"no-store"});
-        if(!r.ok) throw new Error(r.status);
+        const r = await fetch(bust(url), JSON_OPTS);
+        if(!r.ok) throw new Error(r.status + ' ' + r.statusText);
         return await r.json();
-      }catch(e){ return null; }
+      }catch(e){
+        return null;
+      }
     }
-    const fmtPrice = x => (x==null||Number.isNaN(+x)) ? "—" : (+x).toFixed(2);
     function fmtPct(x){
-      if (x==null || Number.isNaN(+x)) return {text:"—", cls:"flat"};
-      const v = +x; return {text:(v>0?"+":"")+v.toFixed(2)+"%", cls:v>0?"up":v<0?"down":"flat"};
+      if(x == null || x === '--') return '--';
+      const s = (x>0?'+':'') + x.toFixed(2) + '%';
+      return s;
+    }
+    function fmtPrice(x){
+      return (x==null || x==='--') ? '--' : x.toFixed(2);
+    }
+    function lastUpdatedFrom(json){
+      if(json && json.updated){
+        const d = new Date(json.updated);
+        if(!isNaN(d)) return d;
+      }
+      return new Date();
     }
 
-    /* --------------------- Tickers -------------------- */
-    function renderTickerStrip(quotes){
+    // ---------- Ticker chips ----------
+    async function renderChips(){
+      const data = await loadJSON('ticker-prices.json');
+      const chips = document.getElementById('chips');
+      chips.innerHTML = '';
       const map = new Map();
-      (quotes?.data || []).forEach(q => map.set(String(q.symbol||"").toUpperCase(), q));
-      const frag = document.createDocumentFragment();
-
-      TICKERS.forEach(sym => {
-        const q = map.get(sym) || {};
-        const chip = document.createElement("div"); chip.className="chip";
-        const left = document.createElement("div");
-        left.style.display="flex"; left.style.flexDirection="column"; left.style.gap="2px";
-        const s = document.createElement("div"); s.className="sym"; s.textContent = sym;
-        const p = document.createElement("div"); p.className="price"; p.textContent = fmtPrice(q.price);
-        left.appendChild(s); left.appendChild(p);
-
-        const r = document.createElement("div");
-        const pct = fmtPct(q.changePct);
-        r.className = "pct " + pct.cls; r.textContent = pct.text;
-
-        chip.appendChild(left); chip.appendChild(r);
-        frag.appendChild(chip);
-      });
-
-      const strip = $("#ticker-strip");
-      strip.innerHTML=""; strip.appendChild(frag);
-
-      const ts = (quotes && quotes.updated) ? new Date(quotes.updated) : new Date();
-      $("#last-updated").textContent = "• Last updated " + ts.toLocaleString();
-    }
-    async function refreshTickers(){
-      const data = await loadJSON(FILES.ticker);
-      renderTickerStrip(data);
+      if(data && Array.isArray(data.data)){
+        for(const r of data.data) map.set(r.symbol, r);
+        // last updated
+        const u = lastUpdatedFrom(data);
+        document.getElementById('lastUpdated').textContent =
+          'Last updated ' + u.toLocaleString();
+      }
+      for(const sym of CHIP_SYMBOLS){
+        const r = map.get(sym);
+        const price = r ? r.price : '--';
+        const pct = r ? r.changePct : 0;
+        const cls = r ? (pct>=0 ? 'up':'down') : 'muted';
+        const pctTxt = r ? ((pct>=0?'+':'') + pct.toFixed(2) + '%') : '--';
+        const el = document.createElement('div');
+        el.className = 'chip';
+        el.innerHTML = `
+          <div class="sym">${sym}</div>
+          <div class="price">${fmtPrice(price)}</div>
+          <div class="chg ${cls}">${pctTxt}</div>
+        `;
+        chips.appendChild(el);
+      }
     }
 
-    /* ---------------- Economic Calendar --------------- */
-    async function renderCalendarToday(){
-      let data = await loadJSON(FILES.calPrimary);
-      if (!data) data = await loadJSON(FILES.calFallback);
-      const body = $("#cal-body"); body.innerHTML="";
-      if (!data || !Array.isArray(data) || data.length===0){
-        $("#cal-empty").style.display="block";
+    // ---------- Calendar ----------
+    async function renderCalendar(){
+      const tbody = document.getElementById('calendarBody');
+      const json = await loadJSON('calendar-today.json');
+      tbody.innerHTML = '';
+      if(!json || !Array.isArray(json.rows) || json.rows.length===0){
+        tbody.innerHTML = `<tr><td colspan="6" class="muted">No entries for today.</td></tr>`;
         return;
       }
-      $("#cal-empty").style.display="none";
-      for(const row of data){
-        const tr = document.createElement("tr");
-        const td = v => { const x=document.createElement("td"); x.textContent=v??"—"; return x; };
-        tr.appendChild(td(row.time));
-        tr.appendChild(td(row.release));
-        tr.appendChild(td(row.period));
-        tr.appendChild(td(row.actual));
-        tr.appendChild(td(row.forecast ?? row.median));
-        tr.appendChild(td(row.previous));
-        body.appendChild(tr);
+      for(const r of json.rows){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.time ?? ''}</td>
+          <td>${r.title ?? ''}</td>
+          <td>${r.period ?? ''}</td>
+          <td>${r.actual ?? ''}</td>
+          <td>${r.forecast ?? ''}</td>
+          <td>${r.previous ?? ''}</td>
+        `;
+        tbody.appendChild(tr);
       }
     }
 
-    /* ---------------- Winners / Losers ---------------- */
-    function fillWL(id, arr){
-      const tb = $(id); tb.innerHTML="";
-      if(!arr || arr.length===0) return;
-      for(const x of arr){
-        const tr = document.createElement("tr");
-        const pct = fmtPct(x.changePct);
+    // ---------- Winners / Losers ----------
+    function rowsToTable(tbodyId, rows){
+      const tb = document.getElementById(tbodyId);
+      tb.innerHTML = '';
+      if(!rows || rows.length===0){
+        tb.innerHTML = `<tr><td colspan="4" class="muted">No data</td></tr>`;
+        return;
+      }
+      for(const r of rows){
+        const pct = (r.changePct ?? 0);
+        const cls = pct>=0 ? 'up' : 'down';
+        const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${(x.symbol||"").toUpperCase()}</td>
-          <td>${x.name ?? "—"}</td>
-          <td>${fmtPrice(x.price)}</td>
-          <td class="${pct.cls}">${pct.text}</td>`;
+          <td>${r.symbol ?? ''}</td>
+          <td class="name">${r.name ?? ''}</td>
+          <td class="num">${fmtPrice(r.price)}</td>
+          <td class="num ${cls}">${fmtPct(pct)}</td>
+        `;
         tb.appendChild(tr);
       }
     }
     async function renderWinnersLosers(){
-      const wins = await loadJSON(FILES.winners);
-      const loses = await loadJSON(FILES.losers);
-
-      fillWL("#winners-body", wins?.data || wins || []);
-      fillWL("#losers-body",  loses?.data || loses || []);
-
-      $("#win-empty").style.display = (wins && (wins.data?.length || wins.length)) ? "none":"block";
-      $("#lose-empty").style.display= (loses && (loses.data?.length|| loses.length))? "none":"block";
+      const winners = await loadJSON('winners.json');
+      const losers  = await loadJSON('losers.json');
+      rowsToTable('winnersBody', winners?.rows || []);
+      rowsToTable('losersBody',  losers?.rows  || []);
     }
 
-    /* ------------------- Heat Map --------------------- */
-    function refreshHeatmap(){
-      const img = $("#heatmap-img");
-      const miss = $("#heatmap-missing");
-      img.onerror = () => { img.style.display="none"; miss.style.display="block"; };
-      img.onload  = () => { img.style.display="block"; miss.style.display="none"; };
-      img.src = FILES.heatmap + "?v=" + Date.now();
+    // ---------- Heat map snapshot presence (optional hint) ----------
+    async function checkHeatmap(){
+      const img = document.getElementById('heatmapImg');
+      // add cache-bust so a new file shows up when replaced
+      img.src = bust('snapshots/finviz-heatmap.png');
+      img.onerror = () => {
+        // keep the alt text; optional could show small note
+      };
     }
 
-    /* --------------------- News ----------------------- */
-    async function renderNews(){
-      const grid = $("#news-grid"); grid.innerHTML="";
-      for(const t of TICKERS){
-        const sym = t.toLowerCase();
-        const data = await loadJSON(`${FILES.newsPrefix}${sym}.json`);
-        const card = document.createElement("div"); card.className="news-card";
-
-        const h3 = document.createElement("h3");
-        h3.textContent = t; card.appendChild(h3);
-
-        const ul = document.createElement("ul");
-        if (data && Array.isArray(data.articles || data) && (data.articles?.length || data.length)){
-          const items = data.articles || data;
-          for (const a of items.slice(0,3)){
-            const li = document.createElement("li");
-            const link = document.createElement("a");
-            link.target = "_blank";
-            link.rel="noopener noreferrer";
-            link.href = a.url || a.link || "#";
-            link.textContent = a.title || a.headline || "Article";
-            li.appendChild(link);
-            if (a.published || a.time || a.date){
-              const small = document.createElement("span");
-              small.className="muted";
-              small.textContent = " · " + (a.published || a.time || a.date);
-              li.appendChild(small);
-            }
-            ul.appendChild(li);
-          }
-        }else{
-          const li = document.createElement("li"); li.className="muted"; li.textContent = "No recent articles.";
+    // ---------- News ----------
+    function newsCard(symbol, items){
+      const wrap = document.createElement('div');
+      wrap.className = 'card news-card';
+      wrap.innerHTML = `<h3>${symbol}</h3>`;
+      const ul = document.createElement('ul');
+      if(items && items.length){
+        for(const it of items.slice(0,3)){
+          const li = document.createElement('li');
+          const when = it.time ? new Date(it.time) : null;
+          li.innerHTML = `
+            <a target="_blank" href="${it.url}">${it.title}</a>
+            ${when ? ` <time> · ${when.toUTCString().replace(' GMT','')}</time>` : ''}
+          `;
           ul.appendChild(li);
         }
-        card.appendChild(ul);
-        grid.appendChild(card);
+      }else{
+        const li = document.createElement('li');
+        li.className = 'placeholder';
+        li.textContent = 'No recent articles.';
+        ul.appendChild(li);
+      }
+      wrap.appendChild(ul);
+      return wrap;
+    }
+    async function renderNews(){
+      const grid = document.getElementById('newsGrid');
+      grid.innerHTML = '';
+      for(const sym of BIG_CAPS){
+        const j = await loadJSON(`news-${sym}.json`);
+        grid.appendChild(newsCard(sym, j?.items || j?.rows || []));
       }
     }
 
-    /* ---------------------- Init ---------------------- */
-    (async function init(){
-      await refreshTickers();
-      await renderCalendarToday();
-      await renderWinnersLosers();
-      await renderNews();
-      refreshHeatmap();
+    // ---------- Init ----------
+    renderChips();
+    renderCalendar();
+    renderWinnersLosers();
+    checkHeatmap();
+    renderNews();
 
-      // periodic refresh
-      setInterval(refreshTickers, 60_000);
-      setInterval(refreshHeatmap, 5*60_000);
-    })();
+    // Refresh chips every 60s during market hours
+    setInterval(renderChips, 60000);
   </script>
 </body>
 </html>
