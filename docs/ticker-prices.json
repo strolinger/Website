@@ -1,0 +1,125 @@
+{
+  "updated": "2025-10-02T03:18:34.049273+00:00",
+  "data": [
+    {
+      "symbol": "AAPL",
+      "price": 255.45,
+      "changePct": 0.32,
+      "volume": 0
+    },
+    {
+      "symbol": "AMD",
+      "price": 164.01,
+      "changePct": 1.37,
+      "volume": 0
+    },
+    {
+      "symbol": "AMZN",
+      "price": 220.63,
+      "changePct": 0.48,
+      "volume": 0
+    },
+    {
+      "symbol": "MSFT",
+      "price": 519.71,
+      "changePct": 0.34,
+      "volume": 0
+    },
+    {
+      "symbol": "META",
+      "price": 717.34,
+      "changePct": -2.32,
+      "volume": 0
+    },
+    {
+      "symbol": "BA",
+      "price": 215.2,
+      "changePct": -0.29,
+      "volume": 0
+    },
+    {
+      "symbol": "GOOGL",
+      "price": 244.9,
+      "changePct": 0.74,
+      "volume": 0
+    },
+    {
+      "symbol": "TSLA",
+      "price": 459.46,
+      "changePct": 3.31,
+      "volume": 0
+    },
+    {
+      "symbol": "COST",
+      "price": 917.34,
+      "changePct": -0.9,
+      "volume": 0
+    },
+    {
+      "symbol": "TXN",
+      "price": 180.39,
+      "changePct": -1.82,
+      "volume": 0
+    },
+    {
+      "symbol": "WDAY",
+      "price": 232.21,
+      "changePct": -3.54,
+      "volume": 0
+    },
+    {
+      "symbol": "NFLX",
+      "price": 1170.9,
+      "changePct": -2.34,
+      "volume": 0
+    },
+    {
+      "symbol": "NVDA",
+      "price": 187.24,
+      "changePct": 0.35,
+      "volume": 0
+    },
+    {
+      "symbol": "MU",
+      "price": 182.15,
+      "changePct": 8.86,
+      "volume": 0
+    },
+    {
+      "symbol": "INTC",
+      "price": 35.94,
+      "changePct": 7.12,
+      "volume": 0
+    },
+    {
+      "symbol": "DIS",
+      "price": 112.95,
+      "changePct": -1.35,
+      "volume": 0
+    },
+    {
+      "symbol": "BABA",
+      "price": 182.78,
+      "changePct": 2.27,
+      "volume": 0
+    },
+    {
+      "symbol": "IWM",
+      "price": 242.49,
+      "changePct": 0.22,
+      "volume": 0
+    },
+    {
+      "symbol": "SPY",
+      "price": 668.45,
+      "changePct": 0.34,
+      "volume": 0
+    },
+    {
+      "symbol": "QQQ",
+      "price": 603.25,
+      "changePct": 0.48,
+      "volume": 0
+    }
+  ]
+}
