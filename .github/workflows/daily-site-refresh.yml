@@ -1,40 +1,47 @@
 name: daily-site-refresh
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: "5 13 * * 1-5"   # 13:05 UTC ≈ 9:05am ET weekdays
+    - cron: '0 12 * * 1-5'   # adjust for your timezone (this is 8am ET)
+  workflow_dispatch:
 
 jobs:
-  build:
+  heatmap:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          python-version: "3.11"
+          node-version: 20
 
-      - name: Install deps
+      - name: Install Playwright
         run: |
-          python -m pip install --upgrade pip
-          pip install requests pillow
+          npm init -y
+          npm i -D playwright
+          npx playwright install --with-deps chromium
 
-      - name: Build daily data/snapshots
+      - name: Snapshot Finviz heatmap → docs/heatmap-snapshot.png
         run: |
-          python scripts/make_heatmap_snapshot.py
-          # If you later add calendar:
-          # python scripts/make_calendar_today.py
+          node - <<'JS'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch();
+            const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 }});
+            const page = await ctx.newPage();
+            await page.goto('https://finviz.com/map.ashx', { waitUntil: 'networkidle' });
+            // If a cookie banner ever appears, you could dismiss it here.
+            await page.waitForTimeout(2000);
+            await page.screenshot({ path: 'docs/heatmap-snapshot.png', fullPage: true });
+            await browser.close();
+          })();
+          JS
 
-      - name: Commit updates
+      - name: Commit updated snapshot
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add docs/heatmap-snapshot.png docs/heatmap.snapshot.png
-          git commit -m "Daily: refresh heat map snapshot" || echo "No changes"
+          git add docs/heatmap-snapshot.png
+          git diff --cached --quiet || git commit -m "Update heatmap snapshot"
           git push
