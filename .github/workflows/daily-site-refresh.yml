@@ -1,15 +1,8 @@
-name: daily-site-refresh
-
-on:
-  schedule:
-    - cron: '0 11 * * 1-5'   # run every weekday at 6am Central (adjust as you like)
-  workflow_dispatch:          # allow manual runs
-
 jobs:
   refresh:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # <-- required so the job can commit the new PNG
+      contents: write   # needed so we can commit the PNG
 
     steps:
       - name: Checkout
@@ -19,8 +12,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
-      - name: Install Playwright (Chromium)
+      # --- FIX: install the package so `require('playwright')` works
+      - name: Install Playwright package
+        run: |
+          npm init -y
+          npm i playwright@^1.47.0
+
+      # --- FIX: install the Chromium browser binaries and OS deps
+      - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
       - name: Snapshot Finviz heatmap → docs/snapshots/heatmap-snapshot.png
@@ -45,9 +46,8 @@ jobs:
               userAgent:
                 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36'
             });
-            const page = await ctx.newPage();
 
-            // Block ad/analytics calls that prevent “network idle”
+            // Block ad/analytics noise that prevents “networkidle”
             await ctx.route('**/*', (route) => {
               const u = route.request().url();
               const block = [
@@ -55,13 +55,14 @@ jobs:
                 'adservice.google','analytics','scorecardresearch','facebook'
               ].some(s => u.includes(s));
               if (block) return route.abort();
-              return route.continue();
+              route.continue();
             });
 
+            const page = await ctx.newPage();
             try {
               await page.goto('https://finviz.com/map.ashx', { waitUntil: 'load', timeout: 120000 });
 
-              // Try to accept cookie banners if present
+              // Try to accept cookie banners
               try {
                 const btn = await page.waitForSelector(
                   'button:has-text("Agree"), button:has-text("I Agree"), #onetrust-accept-btn-handler',
@@ -70,18 +71,15 @@ jobs:
                 if (btn) await btn.click();
               } catch {}
 
-              // Wait for something that looks like the map
-              const sel = ['canvas','img[src*="map.ashx"]','.f-map','.map','#map','#root'].join(', ');
-              await page.waitForSelector(sel, { timeout: 60000 });
-
-              await page.waitForTimeout(2500); // let the map settle
+              await page.waitForSelector('canvas, img[src*="map.ashx"], .f-map, #map, #root', { timeout: 60000 });
+              await page.waitForTimeout(2500);
               await page.screenshot({ path: outFile, fullPage: true });
               console.log('Wrote:', outFile);
+            } catch (e) {
+              console.error('Heatmap snapshot failed:', e);
+              process.exitCode = 1;
+            } finally {
               await browser.close();
-            } catch (err) {
-              console.error('Heatmap snapshot failed:', err);
-              await browser.close();
-              process.exit(1);
             }
           })();
           JS
@@ -91,5 +89,5 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/snapshots/heatmap-snapshot.png
-          git commit -m "Update heatmap snapshot" || echo "No changes"
+          git commit -m "Update heatmap snapshot" || echo "No changes to commit"
           git push
