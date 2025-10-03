@@ -3,19 +3,20 @@ name: intraday-ticker
 on:
   workflow_dispatch:
   schedule:
-    # every 10 minutes (UTC). Adjust as you like.
-    - cron: "*/10 * * * *"
+    - cron: "*/10 * * * *"   # every 10 minutes (UTC)
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python
-      - uses: actions/setup-python@v5
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
