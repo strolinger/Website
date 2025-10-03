@@ -1,47 +1,78 @@
-name: daily-site-refresh
+# 1) Install Playwright Chromium once in the job
+- name: Install Playwright (Chromium)
+  run: npx playwright install --with-deps chromium
 
-on:
-  schedule:
-    - cron: '0 12 * * 1-5'   # adjust for your timezone (this is 8am ET)
-  workflow_dispatch:
+# 2) Snapshot Finviz heatmap -> docs/snapshots/heatmap-snapshot.png
+- name: Snapshot Finviz heatmap → docs/snapshots/heatmap-snapshot.png
+  shell: bash
+  run: |
+    node - <<'JS'
+    const fs = require('fs');
+    const path = require('path');
+    const { chromium } = require('playwright');
 
-jobs:
-  heatmap:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    (async () => {
+      const outDir = path.join('docs', 'snapshots');
+      const outFile = path.join(outDir, 'heatmap-snapshot.png');
+      fs.mkdirSync(outDir, { recursive: true });
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      const browser = await chromium.launch({
+        headless: true,
+        args: ['--no-sandbox','--disable-setuid-sandbox']
+      });
+      const ctx = await browser.newContext({
+        viewport: { width: 1600, height: 1100 },
+        userAgent:
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36'
+      });
+      const page = await ctx.newPage();
 
-      - name: Install Playwright
-        run: |
-          npm init -y
-          npm i -D playwright
-          npx playwright install --with-deps chromium
+      // Block noisy ad/analytics calls that keep network “busy”
+      await ctx.route('**/*', (route) => {
+        const u = route.request().url();
+        const block = [
+          'doubleclick', 'googlesyndication', 'googletagmanager',
+          'adservice.google', 'analytics', 'scorecardresearch', 'facebook'
+        ].some(s => u.includes(s));
+        if (block) return route.abort();
+        return route.continue();
+      });
 
-      - name: Snapshot Finviz heatmap → docs/heatmap-snapshot.png
-        run: |
-          node - <<'JS'
-          const { chromium } = require('playwright');
-          (async () => {
-            const browser = await chromium.launch();
-            const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 }});
-            const page = await ctx.newPage();
-            await page.goto('https://finviz.com/map.ashx', { waitUntil: 'networkidle' });
-            // If a cookie banner ever appears, you could dismiss it here.
-            await page.waitForTimeout(2000);
-            await page.screenshot({ path: 'docs/heatmap-snapshot.png', fullPage: true });
-            await browser.close();
-          })();
-          JS
+      const url = 'https://finviz.com/map.ashx'; // heat map
+      try {
+        // Don’t wait for networkidle—Finviz rarely goes idle
+        await page.goto(url, { waitUntil: 'load', timeout: 120000 });
 
-      - name: Commit updated snapshot
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add docs/heatmap-snapshot.png
-          git diff --cached --quiet || git commit -m "Update heatmap snapshot"
-          git push
+        // If a cookie/consent appears, accept it
+        try {
+          const btn = await page.waitForSelector(
+            'button:has-text("Agree"), button:has-text("I Agree"), #onetrust-accept-btn-handler',
+            { timeout: 5000 }
+          );
+          if (btn) await btn.click();
+        } catch {}
+
+        // Wait for something that looks like the map
+        // (use a broad set of selectors to be resilient to DOM changes)
+        const sel = [
+          'canvas',               // current interactive map layer
+          'img[src*="map.ashx"]', // static fallback if they ever switch
+          '.f-map', '.map', '#map', '#root'
+        ].join(', ');
+        await page.waitForSelector(sel, { timeout: 60000 });
+
+        // Give the map a moment to finish animating/prerendering
+        await page.waitForTimeout(2500);
+
+        // Full-page screenshot so the whole map is captured
+        await page.screenshot({ path: outFile, fullPage: true });
+
+        console.log('Wrote:', outFile);
+        await browser.close();
+      } catch (err) {
+        console.error('Heatmap snapshot failed:', err);
+        await browser.close();
+        process.exit(1);
+      }
+    })();
+    JS
