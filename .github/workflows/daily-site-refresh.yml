@@ -3,16 +3,17 @@ name: daily-site-refresh
 on:
   workflow_dispatch:
   schedule:
-    # 13:05 UTC ≈ 9:05am US/Eastern (adjust if desired)
-    - cron: "5 13 * * 1-5"
+    - cron: "5 13 * * 1-5"   # 13:05 UTC ≈ 9:05am ET weekdays
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -22,12 +23,12 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install requests pillow yfinance
+          pip install requests pillow
 
       - name: Build daily data/snapshots
         run: |
           python scripts/make_heatmap_snapshot.py
-          # You can add calendar later if you want:
+          # If you later add calendar:
           # python scripts/make_calendar_today.py
 
       - name: Commit updates
